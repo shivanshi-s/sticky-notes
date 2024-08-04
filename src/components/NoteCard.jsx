@@ -1,10 +1,14 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import Trash from "../icons/Trash";
 
 const NoteCard = ( {note} ) => {
-    let position = JSON.parse(note.position);
+    const [position, setPosition] = useState(JSON.parse(note.position));
     const colors  = JSON.parse(note.colors);
     const body = JSON.parse(note.body);
+
+    let mouseStartPos = { x: 0, y: 0 };
+    const cardRef = useRef(null);
+
 
     const textAreaRef = useRef(null)
 
@@ -18,8 +22,34 @@ const NoteCard = ( {note} ) => {
         current.style.height = current.scrollHeight + "px"; // Set the new height
     }
 
+    const mouseDown = (e) => {
+        mouseStartPos.x = e.clientX;
+        mouseStartPos.y = e.clientY;
+ 
+        document.addEventListener("mousemove", mouseMove);
+    }
+
+    const mouseMove = (e) => {
+        const mouseMoveDir = {
+            x: mouseStartPos.x - e.clientX,
+            y: mouseStartPos.y - e.clientY
+        }
+
+        console.log(mouseMoveDir);
+
+        mouseStartPos.x = e.clientX;
+        mouseStartPos.y = e.clientY;
+
+        setPosition({
+            x: cardRef.current.offsetLeft - mouseMoveDir.x,
+            y: cardRef.current.offsetTop - mouseMoveDir.y
+        })
+    }
+
   return (
-    <div className="card"
+    <div 
+        ref={cardRef}
+        className="card"
         style={{backgroundColor: colors.colorBody,
         left: `${position.x}px`,
         top: `${position.y}px`,
@@ -36,8 +66,9 @@ const NoteCard = ( {note} ) => {
         </div>
 
         <div
-        className="card-header"
-        style={{ backgroundColor: colors.colorHeader }}
+            onMouseDown={mouseDown}
+            className="card-header"
+            style={{ backgroundColor: colors.colorHeader }}
         >
             <Trash/>
         </div>
